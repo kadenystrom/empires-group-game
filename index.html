@@ -1,10 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Empires Group Game</title>
+    <title>Empires Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* This makes it look good on mobile phones */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 40px 20px; background-color: #f4f7f6; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        input { padding: 12px; width: 100%; box-sizing: border-box; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 16px; }
+        button { padding: 12px 24px; width: 100%; cursor: pointer; background: #5d5fef; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; transition: background 0.3s; }
+        button:hover { background: #4a4cdb; }
+        #waiting-screen { display: none; }
+        .success-icon { font-size: 50px; color: #4caf50; }
+    </style>
 </head>
 <body>
-    <h1>Empires Game Tool</h1>
-    <p>The digital moderator is coming soon!</p>
+
+    <div class="container">
+        <div id="join-screen">
+            <h1>Empires</h1>
+            <p>Enter your secret identity:</p>
+            <input type="text" id="identityInput" placeholder="e.g., Wonder Woman" autocomplete="off">
+            <button onclick="submitName()">Submit to the Scribe</button>
+        </div>
+
+        <div id="waiting-screen">
+            <div class="success-icon">✓</div>
+            <h2>Identity Saved</h2>
+            <p>Pass the phone to the next person or wait for the host to reveal the names.</p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Your specific Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjNvk5FRx1t0-CNWINp9DrTU5AA7Bau_U",
+            authDomain: "empires-group-game.firebaseapp.com",
+            projectId: "empires-group-game",
+            storageBucket: "empires-group-game.firebasestorage.app",
+            messagingSenderId: "327538654623",
+            appId: "1:327538654623:web:fa6f964973c6a252c191aa",
+            databaseURL: "https://empires-group-game-default-rtdb.firebaseio.com" // Standard URL format
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function submitName() {
+            const nameInput = document.getElementById('identityInput');
+            const name = nameInput.value.trim();
+
+            if (name !== "") {
+                // Send the name to the database
+                database.ref('identities').push(name);
+
+                // Switch screens
+                document.getElementById('join-screen').style.display = 'none';
+                document.getElementById('waiting-screen').style.display = 'block';
+                
+                // Clear the input for safety
+                nameInput.value = "";
+            } else {
+                alert("Please type a name first!");
+            }
+        }
+    </script>
 </body>
 </html>
