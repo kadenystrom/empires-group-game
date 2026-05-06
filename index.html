@@ -1,112 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Empires Group Game</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 40px 20px; background-color: #f4f7f6; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { padding: 12px; width: 100%; box-sizing: border-box; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 16px; }
-        button { padding: 12px 24px; width: 100%; cursor: pointer; background: #5d5fef; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        button.secondary { background: #6c757d; }
-        #waiting-screen, #host-screen { display: none; }
-        ul { list-style: none; padding: 0; text-align: left; }
-        li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 5px; font-weight: bold; text-transform: capitalize; }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-    <div class="container">
-        <div id="join-screen">
-            <h1>Empires</h1>
-            <p>Enter your secret identity:</p>
-            <input type="text" id="identityInput" placeholder="e.g., Michael Jordan" autocomplete="off">
-            <button onclick="submitName()">Submit Identity</button>
+    <div id="app">
+        <header id="host-header" class="admin-header hidden">
+            <span>HOST CONSOLE</span>
+            <label style="cursor:pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="displayToggle" onchange="toggleDisplayMode()"> DISPLAY MODE
+            </label>
+        </header>
+
+        <div id="join-screen" class="card hidden">
+            <h1>Join Game</h1>
+            <p style="margin-bottom: 20px; color: var(--text-muted)">Enter your details to join the lobby.</p>
+            
+            <input type="text" id="realNameInput" placeholder="Your Real Name" autocomplete="off">
+            <input type="text" id="identityInput" placeholder="Empire Name (e.g. Apples)" autocomplete="off">
+            
+            <button onclick="submitName()">Join Lobby</button>
         </div>
 
-        <div id="waiting-screen">
-            <h2>✓ Identity Saved</h2>
-            <p>Wait for the host to reveal the list.</p>
+        <div id="waiting-screen" class="card hidden">
+            <h1 style="color: var(--success)">✓ Successfully Joined</h1>
+            <p style="margin-bottom:15px">The host will start the game soon.</p>
+            <button onclick="showJoinScreen()" style="background: var(--accent)">Add Another Player</button>
         </div>
 
-        <div id="host-screen">
-            <h1>Host Dashboard</h1>
-            <p>Once everyone has joined, click below:</p>
-            <button onclick="revealAndShuffle()">Reveal & Shuffle Names</button>
-            <button class="secondary" onclick="clearGame()" style="margin-top: 30px;">Reset Game (Delete All)</button>
-            <ul id="nameList"></ul>
+        <div id="host-screen" class="hidden">
+            <div id="dashboard-layout" class="dashboard with-sidebar">
+
+                <aside id="host-sidebar" class="sidebar-container">
+                    <div class="sidebar-card">
+                        <span class="section-label">Host: Quick Add</span>
+                        <input type="text" id="hostAddReal" class="sidebar-input" placeholder="Real Name">
+                        <input type="text" id="hostAddSecret" class="sidebar-input" placeholder="Empire Name">
+                        <button onclick="hostManualAdd()" style="font-size: 0.75rem; background: var(--success); padding: 6px; margin-bottom: 15px;">Add Player</button>
+
+                        <span class="section-label">Join Lobby</span>
+                        <div id="qrcode"></div>
+                        <p class="qr-caption">Scan to join on mobile</p>
+                        <p id="current-url-text"></p>
+
+                        <span class="section-label">Lobby Controls</span>
+                        <div id="realNamePrune"></div>
+
+                        <button id="toggleSecretsBtn" onclick="toggleSecretPrune()" style="background: var(--border); color: var(--text-main); font-size: 0.65rem; margin-top: 10px; padding: 5px;">Edit Empire Names</button>
+                        <div id="secretPruneBox" class="hidden" style="margin-top:10px;">
+                            <div id="secretNamePrune"></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="card">
+                    <div id="reveal-phase">
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="revealAndShuffle()" style="background: var(--success)">Start Reveal ↓</button>
+                            <button id="stopBtn" class="hidden" onclick="stopReveal()" style="background: var(--danger)">Clear ↑</button>
+                        </div>
+                        <ul id="nameList"></ul>
+                        <button onclick="goToGameboard()" style="margin-top: 10px; background: var(--accent)">Start Round →</button>
+                    </div>
+
+                    <div id="game-phase" class="hidden">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h1 style="margin:0">Empire Tracker</h1>
+                            <button onclick="goBackToReveal()" style="width: auto; padding: 4px 12px; font-size: 0.7rem; background: var(--text-muted);">← Back to Reveal</button>
+                        </div>
+                        
+                        <div id="empire-display"></div>
+
+                        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 15px; text-align: center;">
+                            <button onclick="handleConfirmAction(this, 'undo')" id="undoBtn" class="undo-btn hidden" style="background: #444; width: auto; padding-inline: 20px;">Undo Last Capture</button>
+                            <button onclick="handleConfirmAction(this, 'reset')" style="background: var(--danger); font-size: 0.7rem; width: auto; margin: 10px auto; display: block; opacity: 0.6;">Full Game Reset</button>
+                        </div>
+                    </div>
+
+                    <div id="victory-screen" class="hidden">
+                        <h1 style="font-size: 4rem; margin-bottom: 10px;">🏆</h1>
+                        <h1 id="winner-name">Victory!</h1>
+                        <p style="margin-bottom: 20px;">The Empire has been unified.</p>
+                        <button onclick="handleConfirmAction(this, 'restart')" style="background: var(--primary); max-width: 300px; margin: auto; display: block;">New Game</button>
+                        <button onclick="handleConfirmAction(this, 'undo')" id="victoryUndoBtn" class="undo-btn" style="margin-top: 20px; background: transparent; border: 1px solid var(--text-muted); width: auto; padding-inline: 20px;">Undo Last Capture</button>
+                    </div>
+                </main>
+            </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAjNvk5FRx1t0-CNWINp9DrTU5AA7Bau_U",
-            authDomain: "empires-group-game.firebaseapp.com",
-            projectId: "empires-group-game",
-            storageBucket: "empires-group-game.firebasestorage.app",
-            messagingSenderId: "327538654623",
-            appId: "1:327538654623:web:fa6f964973c6a252c191aa",
-            databaseURL: "https://empires-group-game-default-rtdb.firebaseio.com"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // CHECK IF HOST: Look for ?host=true in the URL
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('host') === 'true') {
-            document.getElementById('join-screen').style.display = 'none';
-            document.getElementById('host-screen').style.display = 'block';
-        }
-
-        function submitName() {
-            const nameInput = document.getElementById('identityInput');
-            const name = nameInput.value.trim();
-            if (name !== "") {
-                database.ref('identities').push(name);
-                document.getElementById('join-screen').style.display = 'none';
-                document.getElementById('waiting-screen').style.display = 'block';
-            }
-        }
-
-        function revealAndShuffle() {
-            database.ref('identities').once('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return alert("No names in the bucket yet!");
-
-                // Convert Firebase object to an Array
-                let names = Object.values(data);
-
-                // Fisher-Yates Shuffle Logic
-                for (let i = names.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [names[i], names[j]] = [names[j], names[i]];
-                }
-
-                // Display names on screen
-                const listUI = document.getElementById('nameList');
-                listUI.innerHTML = ""; // Clear old list
-                names.forEach(n => {
-                    let li = document.createElement('li');
-                    li.textContent = n;
-                    listUI.appendChild(li);
-
-                    // OPTIONAL: Read out loud
-                    let utterance = new SpeechSynthesisUtterance(n);
-                    window.speechSynthesis.speak(utterance);
-                });
-            });
-        }
-
-        function clearGame() {
-            if (confirm("Delete all names and start over?")) {
-                database.ref('identities').set(null);
-                location.reload();
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
