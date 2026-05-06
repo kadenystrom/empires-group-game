@@ -1,0 +1,259 @@
+:root {
+    --bg-color: #0f0f0f;
+    --card-bg: rgba(30, 30, 30, 0.8);
+    --primary: #6c5ce7;
+    --accent: #a29bfe;
+    --success: #00b894;
+    --danger: #d63031;
+    --text-main: #dfe6e9;
+    --text-muted: #636e72;
+    --border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.4;
+    min-height: 100vh;
+}
+
+#app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* THE FIX: Everything starts hidden to prevent flickering */
+.hidden { display: none !important; }
+
+/* Header */
+.admin-header {
+    background: #000;
+    padding: 8px 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Cards & Form Layouts */
+.card {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+    margin: 20px auto;
+    text-align: center;
+    width: 100%;
+}
+
+#join-screen, #waiting-screen {
+    max-width: 400px;
+}
+
+/* Form Inputs */
+input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    display: block;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Dashboard Grid */
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 10px 0;
+    align-items: start;
+}
+
+@media (min-width: 900px) {
+    .dashboard.with-sidebar { grid-template-columns: 240px 1fr; }
+}
+
+/* Sidebar */
+.sidebar-card {
+    background: rgba(20, 20, 20, 0.8);
+    padding: 15px 12px;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    position: sticky;
+    top: 15px;
+    text-align: left;
+}
+
+.sidebar-input {
+    font-size: 0.8rem !important;
+    padding: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+/* Lobby Control Items (The Fix) */
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 6px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+.delete-btn {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 0.7rem;
+    cursor: pointer;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.delete-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+button.confirm {
+    background: var(--danger) !important;
+    color: white !important;
+}
+
+/* Reveal & Tracker UI */
+#game-phase { text-align: left; }
+
+.leader-row {
+    margin-bottom: 8px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    overflow: hidden;
+}
+
+.leader-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.target-dropdown {
+    display: none;
+    background: #000;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.leader-row.active .target-dropdown { display: grid; }
+
+.target-option {
+    background: #2d3436;
+    padding: 8px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.8rem;
+}
+
+.nested-empire {
+    padding: 8px 18px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+#nameList li {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border-left: 4px solid var(--success);
+    list-style: none;
+    text-align: left;
+}
+
+.section-label {
+    display: block;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin: 10px 0 5px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+/* QR & URL */
+#qrcode {
+    background: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    width: 160px;
+    margin: 10px auto;
+}
+
+#qrcode img { width: 100% !important; height: auto !important; }
+
+.qr-caption {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+#current-url-text {
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    text-align: center;
+    word-break: break-all;
+    opacity: 0.7;
+}
