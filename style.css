@@ -1,20 +1,29 @@
+/* =============================================================================
+   THEME & VARIABLES
+   Centralized colors and branding.
+   ============================================================================= */
 :root {
     --bg-color: #0f0f0f;
     --card-bg: rgba(30, 30, 30, 0.8);
-    --primary: #6c5ce7;
-    --accent: #a29bfe;
-    --success: #00b894;
-    --danger: #d63031;
+    --primary: #6c5ce7;      /* Main Purple */
+    --accent: #a29bfe;       /* Light Purple/Links */
+    --success: #00b894;      /* Teal/Join */
+    --danger: #d63031;       /* Red/Destructive */
+
     --text-main: #dfe6e9;
     --text-muted: #636e72;
     --border: rgba(255, 255, 255, 0.1);
 }
 
+/* =============================================================================
+   BASE & RESET
+   ============================================================================= */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -22,238 +31,396 @@ body {
     color: var(--text-main);
     line-height: 1.4;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 #app {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
 }
 
-/* THE FIX: Everything starts hidden to prevent flickering */
-.hidden { display: none !important; }
+#app.ready {
+    opacity: 1;
+}
 
-/* Header */
+.hidden { 
+    display: none !important; 
+}
+
+/* Helper for side-by-side elements */
+.flex-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+/* =============================================================================
+   TYPOGRAPHY & FORM ELEMENTS
+   ============================================================================= */
+
+input[type="text"] {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    min-height: 48px;
+}
+
+button:focus-visible, input:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    min-height: 48px;
+    transition: transform 0.1s active, opacity 0.2s;
+}
+
+button:hover { opacity: 0.8; }
+button:active { transform: scale(0.98); }
+button.confirm { background: var(--danger) !important; }
+
+/* =============================================================================
+   ENTRY SCREENS (HOME, JOIN, WAITING)
+   ============================================================================= */
+.card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+    margin: 40px auto;
+    text-align: center;
+    width: 100%;
+}
+
+#home-screen, #join-screen, #waiting-screen { 
+    max-width: 500px; 
+    display: flex;
+    flex-direction: column;
+    gap: 12px; 
+}
+
+#join-step-1, #join-step-2 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; 
+}
+
+#rejoin-btn {
+    background: var(--accent) !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px !important;
+    text-align: left;
+}
+
+#rejoin-code {
+    background: rgba(0,0,0,0.2);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: white;
+}
+
+/* =============================================================================
+   HOST DASHBOARD GRID
+   ============================================================================= */
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 20px;
+    align-items: start;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard .sidebar-card, 
+.dashboard main.card {
+    margin-top: 0 !important;
+    align-self: start; 
+}
+
+@media (min-width: 900px) {
+    .dashboard.with-sidebar {
+        grid-template-columns: 260px 1fr;
+    }
+    
+    .sidebar-card button, 
+    .sidebar-card input, 
+    .delete-btn {
+        min-height: 30px; 
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+}
+
+/* =============================================================================
+   HOST SIDEBAR & HEADER
+   ============================================================================= */
 .admin-header {
     background: #000;
-    padding: 8px 20px;
-    font-size: 0.7rem;
+    padding: 10px 20px;
+    font-size: 0.75rem;
     font-weight: bold;
     letter-spacing: 2px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border);
-}
-
-/* Cards & Form Layouts */
-.card {
-    background: var(--card-bg);
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-    margin: 20px auto;
-    text-align: center;
-    width: 100%;
-}
-
-#join-screen, #waiting-screen {
-    max-width: 400px;
-}
-
-/* Form Inputs */
-input[type="text"] {
-    width: 100%;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: white;
-    font-size: 1rem;
-    display: block;
-}
-
-input[type="text"]:focus {
-    outline: none;
-    border-color: var(--accent);
-    background: rgba(255, 255, 255, 0.08);
-}
-
-/* Dashboard Grid */
-.dashboard {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 10px 0;
-    align-items: start;
-}
-
-@media (min-width: 900px) {
-    .dashboard.with-sidebar { grid-template-columns: 240px 1fr; }
-}
-
-/* Sidebar */
-.sidebar-card {
-    background: rgba(20, 20, 20, 0.8);
-    padding: 15px 12px;
-    border-radius: 15px;
-    border: 1px solid var(--border);
     position: sticky;
-    top: 15px;
-    text-align: left;
+    top: 0;
+    z-index: 100;
+}
+
+.room-label {
+    color: var(--accent);
+    font-family: monospace;
+    letter-spacing: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 12px;
+    border-radius: 8px;
+    text-shadow: 0 0 8px rgba(162, 155, 254, 0.4);
+}
+
+.sidebar-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
 }
 
 .sidebar-input {
-    font-size: 0.8rem !important;
-    padding: 8px !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 8px;
 }
 
-/* Lobby Control Items (The Fix) */
+.section-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    margin-top: 12px;
+    font-weight: bold;
+}
+
+#display-room-code {
+    font-size: 2.4rem;
+    color: var(--accent);
+    letter-spacing: 4px;
+    font-family: monospace;
+    margin-bottom: 5px;
+    margin-top: -10px;
+    display: block;
+    text-shadow: 0 0 15px rgba(162, 155, 254, 0.3);
+}
+
+#qrcode {
+    background: #fff;
+    padding: 10px;
+    border-radius: 16px;
+    width: 180px;
+    margin: 0 auto;
+}
+#qrcode img { width: 100% !important; }
+
+.qr-link {
+    display: block;
+    text-align: center;
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-top: 4px;
+    font-weight: bold;
+}
+
+.qr-link:hover {
+    opacity: 0.8;
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+.qr-link:active { transform: scale(0.98); }
+
+/* =============================================================================
+   GAMEPLAY & LOBBY COMPONENTS
+   ============================================================================= */
+#reveal-phase, #game-phase {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; 
+}
+
+/* STICKY REVEAL CONTROLS: Keeps buttons visible while list scrolls */
+#reveal-phase .flex-row {
+    position: sticky;
+    top: -16px; /* Offset to align with card padding */
+    background: #1e1e1e; /* Matches card background */
+    padding: 15px 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+}
+
 .player-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 10px;
-    background: rgba(255, 255, 255, 0.03);
-    margin-bottom: 6px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    color: var(--text-main);
+    padding: 8px; 
+    background: rgba(255, 255, 255, 0.04);
+    margin-bottom: 8px;
+    border-radius: 12px;
+    font-size: 0.95rem;
 }
 
 .delete-btn {
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(214, 48, 49, 0.1);
+    border: 1px solid rgba(214, 48, 49, 0.4);
+    color: var(--danger);
+    font-size: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    background: transparent;
-    border: 1px solid var(--danger);
-    color: var(--danger);
-    font-size: 0.7rem;
     cursor: pointer;
-    margin-bottom: 0;
-    padding: 0;
 }
-
-.delete-btn:hover {
-    background: var(--danger);
-    color: white;
-}
-
-/* Buttons */
-button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: var(--primary);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 8px;
-}
-
-button.confirm {
-    background: var(--danger) !important;
-    color: white !important;
-}
-
-/* Reveal & Tracker UI */
-#game-phase { text-align: left; }
 
 .leader-row {
-    margin-bottom: 8px;
-    border-radius: 12px;
+    margin-bottom: 12px;
+    border-radius: 16px;
     border: 1px solid var(--border);
     background: rgba(255,255,255,0.02);
-    overflow: hidden;
 }
 
 .leader-btn {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 18px;
-    width: 100%;
+    padding: 16px 20px;
     background: transparent;
-    border: none;
-    color: white;
-    cursor: pointer;
 }
 
 .target-dropdown {
     display: none;
-    background: #000;
-    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
     border-top: 1px solid var(--border);
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 10px;
 }
-
 .leader-row.active .target-dropdown { display: grid; }
 
 .target-option {
     background: #2d3436;
-    padding: 8px;
-    border-radius: 6px;
+    padding: 10px;
+    border-radius: 8px;
     text-align: center;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
 }
 
 .nested-empire {
-    padding: 8px 18px;
-    background: rgba(0, 0, 0, 0.2);
-    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: left;
+    display: block;
+}
+
+.nested-empire:empty { display: none; }
+
+.captured-branch {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sub-empire {
+    padding-left: 10px;
+    margin-top: 2px;
+}
+
+.captured-player {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    padding: 2px 0;
+}
+
+.id-tag {
+    color: var(--accent);
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+#nameList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 #nameList li {
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    font-size: 1.2rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    border-left: 4px solid var(--success);
-    list-style: none;
-    text-align: left;
-}
-
-.section-label {
-    display: block;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin: 10px 0 5px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-/* QR & URL */
-#qrcode {
-    background: #fff;
-    padding: 10px;
-    border-radius: 12px;
-    width: 160px;
-    margin: 10px auto;
-}
-
-#qrcode img { width: 100% !important; height: auto !important; }
-
-.qr-caption {
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    text-align: center;
-    text-transform: uppercase;
+    padding: 10px 20px; 
     margin-bottom: 10px;
+    font-size: 1.15rem; 
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    border-left: 4px solid var(--success); 
+    text-align: left;
+    /* Respects space for sticky buttons above */
+    scroll-margin-top: 100px;
+}
+#nameList:empty { display: none; }
+
+/* =============================================================================
+   ALERTS & ANIMATIONS
+   ============================================================================= */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 90%;
+    max-width: 350px;
+    pointer-events: none;
 }
 
-#current-url-text {
-    font-size: 0.55rem;
-    color: var(--text-muted);
+.toast {
+    background: var(--danger);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     text-align: center;
-    word-break: break-all;
-    opacity: 0.7;
+    font-weight: bold;
+    font-size: 0.9rem;
+    animation: slideDown 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
 }
+
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
