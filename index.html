@@ -3,91 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Empires Group Game</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>">
+    <title>Empires - A Group Guessing Game</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-
     <div id="app">
+        <div id="home-screen" class="card hidden">
+            <span><h1>Empires</h1><p style="color: var(--text-muted);">A Group Game of Secret Identities</p></span>
+            <div id="rejoin-container" class="hidden">
+                <button data-action="rejoin" id="rejoin-btn">
+                    <span>Resume Hosting</span>
+                    <span id="rejoin-code"></span>
+                </button>
+            </div>
+
+            <button data-action="show-host-init" style="background: var(--success)">Host New Game</button>
+            <button data-action="show-join" style="background: var(--primary)">Join Existing Game</button>
+        </div>
+
         <header id="host-header" class="admin-header hidden">
-            <span>HOST CONSOLE</span>
+            <span>HOST CONSOLE <span id="header-room-display" class="room-label"></span></span>
             <label style="cursor:pointer; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" id="displayToggle" onchange="toggleDisplayMode()"> DISPLAY MODE
+                <input type="checkbox" id="displayToggle"> DISPLAY MODE
             </label>
         </header>
 
         <div id="join-screen" class="card hidden">
-            <h1>Join Game</h1>
-            <p style="margin-bottom: 20px; color: var(--text-muted)">Enter your details to join the lobby.</p>
+            <div id="join-step-1">
+                <h1>Enter Room Code</h1>
+                <input type="text" id="roomCodeInput" placeholder="5-LETTER CODE" maxlength="5" autocapitalize="characters"> 
+                <button data-action="verify-room">Next →</button>
+            </div>
+
+            <div id="join-step-2" class="hidden">
+                <h1>Join Room: <span id="verified-room-label" class="room-label"></span></h1>
+                <input type="text" id="realNameInput" placeholder="Your Real Name"> 
+                <input type="text" id="identityInput" placeholder="Empire Name (e.g. Apples)"> 
+                <button data-action="submit-join">Join Lobby</button>
+            </div>
             
-            <input type="text" id="realNameInput" placeholder="Your Real Name" autocomplete="off">
-            <input type="text" id="identityInput" placeholder="Empire Name (e.g. Apples)" autocomplete="off">
-            
-            <button onclick="submitName()">Join Lobby</button>
+            <button data-action="reload" style="background: transparent; color: var(--text-muted); font-size: 0.8rem;">← Back</button>
         </div>
 
+        <div id="toast-container" aria-live="polite"></div>
+
         <div id="waiting-screen" class="card hidden">
-            <h1 style="color: var(--success)">✓ Successfully Joined</h1>
+            <h1 style="color: var(--success)">✓ Joined Room <span id="waiting-room-display" class="room-label"></span></h1>
             <p style="margin-bottom:15px">The host will start the game soon.</p>
-            <button onclick="showJoinScreen()" style="background: var(--accent)">Add Another Player</button>
+            <button data-action="show-join" style="background: var(--accent)">Add Another Player</button>
         </div>
 
         <div id="host-screen" class="hidden">
             <div id="dashboard-layout" class="dashboard with-sidebar">
-
                 <aside id="host-sidebar" class="sidebar-container">
                     <div class="sidebar-card">
-                        <span class="section-label">Host: Quick Add</span>
-                        <input type="text" id="hostAddReal" class="sidebar-input" placeholder="Real Name">
-                        <input type="text" id="hostAddSecret" class="sidebar-input" placeholder="Empire Name">
-                        <button onclick="hostManualAdd()" style="font-size: 0.75rem; background: var(--success); padding: 6px; margin-bottom: 15px;">Add Player</button>
+                        <span class="section-label">Room Code</span>
+                        <h2 id="display-room-code">-----</h2>
 
                         <span class="section-label">Join Lobby</span>
-                        <div id="qrcode"></div>
-                        <p class="qr-caption">Scan to join on mobile</p>
-                        <p id="current-url-text"></p>
+                        <div id="qrcode" data-action="copy-link" style="cursor: pointer;" title="Click to copy link"></div>
+                        <a href="#" class="qr-link" data-action="copy-link">Scan or Click to Copy Link</a>
+                        
+                        <span class="section-label">Host: Quick Add Player</span>
+                        <input type="text" id="hostAddReal" class="sidebar-input" placeholder="Real Name">
+                        <input type="text" id="hostAddSecret" class="sidebar-input" placeholder="Empire Name">
+                        <button data-action="host-add" style="font-size: 0.75rem; background: var(--success); padding: 10px; margin-top: 4px;">Add Player</button>
 
                         <span class="section-label">Lobby Controls</span>
                         <div id="realNamePrune"></div>
-
-                        <button id="toggleSecretsBtn" onclick="toggleSecretPrune()" style="background: var(--border); color: var(--text-main); font-size: 0.65rem; margin-top: 10px; padding: 5px;">Edit Empire Names</button>
+                        <button data-action="toggle-secrets-ui" style="background: var(--border); color: var(--text-main); font-size: 0.65rem; margin-top: 10px; padding: 5px;">Edit Empire Names</button>
                         <div id="secretPruneBox" class="hidden" style="margin-top:10px;">
                             <div id="secretNamePrune"></div>
                         </div>
+
+                        <span class="section-label">Danger Zone</span>
+                        <button data-action="close-room" style="background: var(--danger); font-size: 0.7rem;">End Session & Close Room</button>
                     </div>
                 </aside>
 
                 <main class="card">
                     <div id="reveal-phase">
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="revealAndShuffle()" style="background: var(--success)">Start Reveal ↓</button>
-                            <button id="stopBtn" class="hidden" onclick="stopReveal()" style="background: var(--danger)">Clear ↑</button>
+                        <div class="flex-row">
+                            <button data-action="start-reveal" style="background: var(--success)">Start Reveal ↓</button>
+                            <button id="stopBtn" class="hidden" data-action="stop-reveal" style="background: var(--danger)">Clear ↑</button>
                         </div>
                         <ul id="nameList"></ul>
-                        <button onclick="goToGameboard()" style="margin-top: 10px; background: var(--accent)">Start Round →</button>
+                        <button data-action="go-gameboard" style="background: var(--accent)">Start Round →</button>
                     </div>
 
                     <div id="game-phase" class="hidden">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h1 style="margin:0">Empire Tracker</h1>
-                            <button onclick="goBackToReveal()" style="width: auto; padding: 4px 12px; font-size: 0.7rem; background: var(--text-muted);">← Back to Reveal</button>
-                        </div>
-                        
                         <div id="empire-display"></div>
-
-                        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 15px; text-align: center;">
-                            <button onclick="handleConfirmAction(this, 'undo')" id="undoBtn" class="undo-btn hidden" style="background: #444; width: auto; padding-inline: 20px;">Undo Last Capture</button>
-                            <button onclick="handleConfirmAction(this, 'reset')" style="background: var(--danger); font-size: 0.7rem; width: auto; margin: 10px auto; display: block; opacity: 0.6;">Full Game Reset</button>
-                        </div>
                     </div>
 
-                    <div id="victory-screen" class="hidden">
-                        <h1 style="font-size: 4rem; margin-bottom: 10px;">🏆</h1>
-                        <h1 id="winner-name">Victory!</h1>
-                        <p style="margin-bottom: 20px;">The Empire has been unified.</p>
-                        <button onclick="handleConfirmAction(this, 'restart')" style="background: var(--primary); max-width: 300px; margin: auto; display: block;">New Game</button>
-                        <button onclick="handleConfirmAction(this, 'undo')" id="victoryUndoBtn" class="undo-btn" style="margin-top: 20px; background: transparent; border: 1px solid var(--text-muted); width: auto; padding-inline: 20px;">Undo Last Capture</button>
+                    <div id="victory-screen" class="card hidden" style="border: 2px solid var(--success); background: rgba(0, 184, 148, 0.05);">
+                        <h1 style="font-size: 3.5rem; margin-bottom: 0;">🏆</h1>
+                        <h1 id="winner-name" style="color: var(--success); margin-bottom: 20px;">Victory!</h1>
+                        <span class="section-label">Final Empire Tree</span>
+                        <div id="final-tree-display" style="margin-bottom: 30px;"></div>
+                        <button data-action="restart" style="background: var(--primary); max-width: 300px; margin: auto; display: block;">Play Again (Reset Board)</button>
+                    </div>
+
+                    <div id="shared-game-controls" class="hidden" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; text-align: center;">
+                        <button data-action="undo" id="undoBtn" class="undo-btn hidden" style="background: #444; width: auto; padding-inline: 25px; margin-bottom: 15px;">↩ Undo Last Capture</button>
+                        <button data-action="reset" style="background: var(--danger); font-size: 0.7rem; width: auto; margin: 0 auto; display: block;">Game Reset</button>
                     </div>
                 </main>
             </div>
